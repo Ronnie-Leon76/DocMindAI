@@ -1,21 +1,22 @@
 import os
-import pymupdf4llm
 import pandas as pd
-import tempfile
-from typing import Dict, Any, Optional, List
+from typing import Any, Optional
 
-# Import unstructured components for different file types
-from unstructured.partition.auto import partition
-from unstructured.partition.pdf import partition_pdf
-from unstructured.partition.docx import partition_docx
-from unstructured.partition.pptx import partition_pptx
-from unstructured.partition.xlsx import partition_xlsx
-from unstructured.partition.md import partition_md
-from unstructured.partition.html import partition_html
-from unstructured.partition.xml import partition_xml
-from unstructured.partition.email import partition_email
-from unstructured.partition.text import partition_text
-from unstructured.partition.epub import partition_epub
+# Import Langchain document loaders
+from langchain_community.document_loaders import (
+    PyMuPDFLoader,
+    UnstructuredWordDocumentLoader,
+    UnstructuredPowerPointLoader,
+    UnstructuredExcelLoader,
+    UnstructuredMarkdownLoader,
+    UnstructuredHTMLLoader,
+    UnstructuredXMLLoader,
+    UnstructuredEmailLoader,
+    UnstructuredFileLoader,
+    UnstructuredEPubLoader,
+    CSVLoader,
+    TextLoader
+)
 
 def get_processor_for_file(file_path: str) -> Optional[callable]:
     """
@@ -23,7 +24,7 @@ def get_processor_for_file(file_path: str) -> Optional[callable]:
     """
     file_extension = os.path.splitext(file_path)[1].lower()
     
-    # Map file extensions to specific partition functions
+    # Map file extensions to specific processor functions
     processors = {
         ".pdf": process_pdf,
         ".docx": process_docx,
@@ -40,7 +41,7 @@ def get_processor_for_file(file_path: str) -> Optional[callable]:
         ".eml": process_email,
         ".epub": process_epub,
         ".txt": process_text,
-        ".csv": process_text,
+        ".csv": process_csv,
         ".rtf": process_text,
         
         # Code files
@@ -75,171 +76,168 @@ def process_document(file_path: str) -> Optional[str]:
 
 def process_pdf(file_path: str) -> str:
     """
-    Process PDF documents using pymupdf4llm
+    Process PDF documents using Langchain's PyMuPDFLoader
     """
-    # Initialize the PDF processor
-    pdf_processor = pymupdf4llm.PdfProcessor(file_path)
+    loader = PyMuPDFLoader(file_path)
+    docs = loader.load()
     
-    # Extract text, tables, and images
-    extracted_text = pdf_processor.extract_text()
-    extracted_tables = pdf_processor.extract_tables()
-    extracted_images = pdf_processor.extract_images()
-
-    # Combine extracted content
-    combined_content = []
-
-    if extracted_text:
-        combined_content.append(extracted_text)
+    texts = [doc.page_content for doc in docs if doc.page_content]
+    combined_text = "\n\n".join(texts)
     
-    if extracted_tables:
-        for table in extracted_tables:
-            combined_content.append(str(table))
-    
-    if extracted_images:
-        combined_content.append(f"Extracted {len(extracted_images)} images.")
-
-    return "\n\n".join(combined_content)
+    return combined_text
 
 def process_docx(file_path: str) -> str:
     """
-    Process DOCX documents using unstructured
+    Process DOCX documents using Langchain's UnstructuredWordDocumentLoader
     """
-    elements = partition_docx(
-        filename=file_path,
-        chunking_strategy="by_title",
-        max_characters=4000,
-        new_after_n_chars=3800,
-        combine_text_under_n_chars=2000,
-    )
+    loader = UnstructuredWordDocumentLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+    texts = [doc.page_content for doc in docs if doc.page_content]
     combined_text = "\n\n".join(texts)
     
     return combined_text
 
 def process_pptx(file_path: str) -> str:
     """
-    Process PPTX documents using unstructured
+    Process PPTX documents using Langchain's UnstructuredPowerPointLoader
     """
-    elements = partition_pptx(
-        filename=file_path,
-    )
+    loader = UnstructuredPowerPointLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+    texts = [doc.page_content for doc in docs if doc.page_content]
     combined_text = "\n\n".join(texts)
     
     return combined_text
 
 def process_xlsx(file_path: str) -> str:
     """
-    Process XLSX documents using unstructured
+    Process XLSX documents using Langchain's UnstructuredExcelLoader
     """
-    elements = partition_xlsx(
-        filename=file_path,
-    )
+    loader = UnstructuredExcelLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+    texts = [doc.page_content for doc in docs if doc.page_content]
     combined_text = "\n\n".join(texts)
     
     return combined_text
 
 def process_markdown(file_path: str) -> str:
     """
-    Process Markdown documents using unstructured
+    Process Markdown documents using Langchain's UnstructuredMarkdownLoader
     """
-    elements = partition_md(
-        filename=file_path,
-    )
+    loader = UnstructuredMarkdownLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+    texts = [doc.page_content for doc in docs if doc.page_content]
     combined_text = "\n\n".join(texts)
     
     return combined_text
 
 def process_html(file_path: str) -> str:
     """
-    Process HTML documents using unstructured
+    Process HTML documents using Langchain's UnstructuredHTMLLoader
     """
-    elements = partition_html(
-        filename=file_path,
-    )
+    loader = UnstructuredHTMLLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+    texts = [doc.page_content for doc in docs if doc.page_content]
     combined_text = "\n\n".join(texts)
     
     return combined_text
 
 def process_xml(file_path: str) -> str:
     """
-    Process XML documents using unstructured
+    Process XML documents using Langchain's UnstructuredXMLLoader
     """
-    elements = partition_xml(
-        filename=file_path,
-    )
+    loader = UnstructuredXMLLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+    texts = [doc.page_content for doc in docs if doc.page_content]
     combined_text = "\n\n".join(texts)
     
     return combined_text
 
 def process_email(file_path: str) -> str:
     """
-    Process email documents using unstructured
+    Process email documents using Langchain's UnstructuredEmailLoader
     """
-    elements = partition_email(
-        filename=file_path,
-    )
+    loader = UnstructuredEmailLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+    texts = [doc.page_content for doc in docs if doc.page_content]
     combined_text = "\n\n".join(texts)
     
     return combined_text
 
 def process_text(file_path: str) -> str:
     """
-    Process text documents using unstructured
+    Process text documents using Langchain's TextLoader
     """
-    elements = partition_text(
-        filename=file_path,
-        chunking_strategy="by_title",
-        max_characters=4000,
-        new_after_n_chars=3800,
-        combine_text_under_n_chars=2000,
-    )
+    loader = TextLoader(file_path, encoding="utf-8")
+    try:
+        docs = loader.load()
+        
+        texts = [doc.page_content for doc in docs if doc.page_content]
+        combined_text = "\n\n".join(texts)
+        
+        return combined_text
+    except UnicodeDecodeError:
+        # Try with a different encoding if utf-8 fails
+        loader = TextLoader(file_path, encoding="latin-1")
+        docs = loader.load()
+        
+        texts = [doc.page_content for doc in docs if doc.page_content]
+        combined_text = "\n\n".join(texts)
+        
+        return combined_text
+
+def process_csv(file_path: str) -> str:
+    """
+    Process CSV documents using Langchain's CSVLoader
+    """
+    loader = CSVLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
-    combined_text = "\n\n".join(texts)
+    # Create a formatted string representation of the CSV data
+    rows = []
+    if docs:
+        # Get column names from metadata if available
+        if hasattr(docs[0], 'metadata') and 'columns' in docs[0].metadata:
+            rows.append(",".join(docs[0].metadata['columns']))
+        
+        # Add content rows
+        for doc in docs:
+            rows.append(doc.page_content)
     
-    return combined_text
+    return "\n".join(rows)
 
 def process_epub(file_path: str) -> str:
     """
-    Process EPUB documents using unstructured
+    Process EPUB documents using Langchain's UnstructuredEPubLoader
     """
-    elements = partition_epub(
-        filename=file_path,
-    )
+    loader = UnstructuredEPubLoader(file_path)
+    docs = loader.load()
     
-    texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+    texts = [doc.page_content for doc in docs if doc.page_content]
     combined_text = "\n\n".join(texts)
     
     return combined_text
 
 def process_generic(file_path: str) -> str:
     """
-    Generic document processor using unstructured's auto partitioning
+    Generic document processor using Langchain's UnstructuredFileLoader
     """
     try:
-        elements = partition(
-            filename=file_path,
-        )
+        loader = UnstructuredFileLoader(file_path)
+        docs = loader.load()
         
-        texts = [element.text for element in elements if hasattr(element, 'text') and element.text]
+        texts = [doc.page_content for doc in docs if doc.page_content]
         combined_text = "\n\n".join(texts)
         
         return combined_text
     except Exception as e:
-        # Fall back to basic text processing if auto-partition fails
+        # Fall back to basic text processing if UnstructuredFileLoader fails
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 return f.read()
