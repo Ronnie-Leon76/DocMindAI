@@ -2,18 +2,6 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    git \
-    software-properties-common \
-    libpoppler-dev \
-    libmagic1 \
-    tesseract-ocr \
-    libreoffice \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy requirements first for better caching
 COPY requirements.txt .
 
