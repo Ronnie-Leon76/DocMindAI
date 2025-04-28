@@ -9,18 +9,18 @@ langchain-huggingface==0.1.2
 langchain-text-splitters==0.3.8
 langdetect==1.0.9
 langsmith==0.3.33
-llama_cpp_python==0.3.8
-numpy
-opencv-python==4.11.0.86
+llama-cpp-python --prefer-binary
+numpy>=1.24.0
+opencv-python-headless==4.11.0.86
 orjson==3.10.16
 overrides==7.7.0
 packaging==24.2
 pandas==2.2.3
 pdf2image==1.17.0
-pillow==11.2.1
+pillow
 posthog==3.25.0
 propcache==0.3.1
-protobuf==5.29.4
+protobuf
 psutil==7.0.0
 pyarrow==19.0.1
 pyasn1==0.6.1
@@ -40,6 +40,7 @@ PyPika==0.48.9
 pytesseract==0.3.13
 python-docx
 python-pptx
-sentence-transformers
-streamlit
-torch
+sentence-transformers==2.6.0
+streamlit==1.33.0
+-f https://download.pytorch.org/whl/torch_stable.html
+torch==2.3.0+cpu
